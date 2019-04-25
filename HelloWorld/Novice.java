@@ -27,11 +27,20 @@ public class Novice{
     public String getJob(){
         return job;
     }
+    public int getHp(){
+        return hp;
+    }
     public int getDef(){
         return def;
     }
     public int getAtk(){
         return atk;
+    }
+    public int getExp(){
+        return exp;
+    }
+    public int getExpToLevelUp(){
+        return expToNextLevel-exp;
     }
     public Novice getAll(){
         return this;
@@ -73,6 +82,19 @@ public class Novice{
         System.out.println("HP : " + hp + "    " + "Level : " + level + "    "+"exp : "+exp + "  Class : " + job);
         System.out.println("=================================================");
     }
+    public int fireBlast(){
+        return 0;
+    }
+    public int fireBall(){
+        return 0;
+    }
+    public int heavySlash(){
+        return 0;
+    }
+    public int tackle(){
+        return 0;
+    }
+
     public static void pause(){
         try
         {

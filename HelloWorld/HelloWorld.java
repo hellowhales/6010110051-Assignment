@@ -1,163 +1,366 @@
 import java.util.*;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
 public class HelloWorld{
+    JFrame gui = new JFrame("HelloWorld");
+    Container c ;
+    JPanel playerStatPanel ;
+    JPanel monsterStatPanel ;
+    JPanel battlingPlayer;
+    JPanel battlingMonster;
+    JPanel actionPanel ;
+    JLabel pJob ;
+    JLabel pLevel ;
+    JLabel pHp ;
+    JLabel pExp ;
+    JLabel pExpToNextLevel;
+    JLabel pMonsterSlained;
+    JLabel idleMons;
+    JLabel mName;
+    JLabel mHp;
+    JLabel mLevel;
+    JLabel pTitle;
+    JLabel mTitle;
+    JButton battleButton ;
+    JButton bagButton ;
+    JButton exitButton ;
+    JButton classChangeButton ;
+    JButton selectMonsterButton ;    
+    JButton usePotionButton;
+    Boolean monsterSelected = false;
+    String monsterID;
+    Monster selectableMonster1;
+    Monster selectableMonster2;
+    Monster selectableMonster3;
     Monster mon = new Monster();
+    JPanel statDisplay;
+    Boolean damageCal = false;
+    int playerdmg = 0;
+    JFrame battleGUI;
+    Container cBattle ;
+    Boolean battleEnded = false;
+    Novice player;
+    Bag inventory ;
+    int monsterSlained = 0;
     public static void main(String []args){
         HelloWorld game = new HelloWorld();
-        Bag inventory = new Bag();
-        InputReader sc = new InputReader();
-        Novice player = new Novice();
-        String command;
-        ArrayList<String> allcommands = new ArrayList<String>();
-        allcommands.add("status");
-        allcommands.add("heal");
-        allcommands.add("attack");
-        allcommands.add("classchange");
-        allcommands.add("item");
-        allcommands.add("getpotion");
-        allcommands.add("usepotion");
-        allcommands.add("help");
-        allcommands.add("exit");
-        //start
-        System.out.println("All available commands.");
-        System.out.println(allcommands);
-        command = game.inputNovice(player);
-        //player control
-        while ( !(command.equals("exit") ) ){
-            if ( command.equals("status") )
-                player.status();
-            else if ( command.equals("heal") )
-                player.heal(20);
-            else if ( command.equals("attack") ){
-                System.out.println("Which monster to attack ? or Cancel");
-                game.mon.printAllMonsters();
-                System.out.print("Attack : ");
-                command = sc.getinput();
-                if ( command.equals("slime") )
-                    player = game.attack(player,game.mon.Slime());
-                else if ( command.equals("cancel") || command.equals("exit"))
-                    System.out.println("Cancelled.");
-                else 
-                    System.out.println("Monster " + command + " Not Found.");
-            }
-            else if ( command.equals("item") )
-                inventory.itemlist();
-            else if ( command.equals("help" )){
-                System.out.println("All available commands.");
-                System.out.println(allcommands);}
-            else if ( command.equals("getpotion") )
-                inventory.getpotion();
-            else if ( command.equals("usepotion") ){
-                if ( inventory.usepotion() == 1) {
-                player.heal(15);}
-                }
-            else if ( command.equals("classchange"))
-                player = game.classChange(player);
-            else
-                System.out.println("Command " + command + " Not Found.") ;
-            command = game.inputNovice(player);
-        }
-        //end of player control
+        game.run(game);
     }//end main
-    public Novice attack(Novice player , Monster mon){
-        ArrayList<String> allcommands = new ArrayList<String>();
-        allcommands.add("Run");
-        allcommands.add("Attack");
-        if (player.getJob().equals("Swordman") )
-            for (String skill : ((Swordman)player).getSkills()){
-                allcommands.add(skill);
+    public void run(HelloWorld game){
+        inventory = new Bag();
+        Novice player = new Novice();
+        gui = new JFrame("HelloWorld");
+        c = gui.getContentPane();
+        gui.setSize(300,175);
+        //c.setLayout(new GridLayout(1,3,2,2));
+        c.setLayout(new BorderLayout(10,7));
+        //stat display
+        statDisplay = new JPanel();
+        statDisplay.setLayout(new BorderLayout(5,5));
+        //player panel
+        playerStatPanel = new JPanel();
+        playerStatPanel.setLayout(new BoxLayout(playerStatPanel,BoxLayout.Y_AXIS));
+        //monster panel
+        monsterStatPanel = new JPanel();
+        monsterStatPanel.setLayout(new BoxLayout(monsterStatPanel,BoxLayout.Y_AXIS));
+        //action Panel
+        actionPanel = new JPanel();
+        actionPanel.setLayout(new GridLayout(2,2));
+        //player JLabel
+        pTitle = new JLabel("|=======Player=======|");
+        pJob = new JLabel("Job : "+player.getJob());
+        pLevel = new JLabel("Level : "+ Integer.toString(player.getLevel()));
+        pHp = new JLabel("HP : "+ Integer.toString(player.getHp()));
+        pExp = new JLabel("exp : "+ Integer.toString(player.getExp()));
+        pExpToNextLevel = new JLabel("Need more " + player.getExpToLevelUp() + " exps");
+        pMonsterSlained = new JLabel("Monster Slained : "+ Integer.toString(monsterSlained));
+        //monster JLabel
+        idleMons = new JLabel("Please select monster first");
+        mName = new JLabel("Monster's Name : " );
+        mLevel = new JLabel();
+        mHp = new JLabel();
+        mTitle = new JLabel();
+        //button
+        battleButton = new JButton("Battle");
+        bagButton = new JButton("Bag");
+        exitButton = new JButton("Exit");
+        classChangeButton = new JButton("Class Change");
+        selectMonsterButton = new JButton("Find nearby monster");
+        usePotionButton = new JButton("Use Potion");
+        //action listener
+
+        selectMonsterButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                int currentMonster = 3;
+                selectableMonster1 = mon.getRandom();
+                selectableMonster2 = mon.getRandom();
+                selectableMonster3 = mon.getRandom();
+                monsterID = JOptionPane.showInputDialog(c,
+                                        "1 : "  + selectableMonster1.getName() + "  Level : " + selectableMonster1.getLevel() + "  HP : " + selectableMonster1.getHp() +
+                                        "\n 2 : " + selectableMonster2.getName() +"  Level : " + selectableMonster2.getLevel() + "  HP : " + selectableMonster2.getHp() +
+                                        "\n 3 : " + selectableMonster3.getName() +"  Level : " + selectableMonster3.getLevel() + "  HP : " + selectableMonster3.getHp() +
+                                        " \n\n Select monster to attack(Enter number)", "Found Monster", JOptionPane.NO_OPTION);
+                while (Integer.parseInt(monsterID) > currentMonster || Integer.parseInt(monsterID) < 0){
+                    monsterID = JOptionPane.showInputDialog(c,
+                                        "1 : "  + selectableMonster1.getName() + "  Level : " + selectableMonster1.getLevel() + "  HP : " + selectableMonster1.getHp() +
+                                        "\n 2 : " + selectableMonster2.getName() +"  Level : " + selectableMonster2.getLevel() + "  HP : " + selectableMonster2.getHp() +
+                                        "\n 3 : " + selectableMonster3.getName() +"  Level : " + selectableMonster3.getLevel() + "  HP : " + selectableMonster3.getHp() +
+                                        " \n\n Select monster to attack(Enter number)", "Found Monster", JOptionPane.NO_OPTION);
+                }
+                monsterSelected = true;
+                if (Integer.parseInt(monsterID)==1){
+                    mon = selectableMonster1;
+                }
+                else if (Integer.parseInt(monsterID) == 2){
+                    mon = selectableMonster2;
+                }
+                else mon = selectableMonster3;
+                game.showMonster(mon);
             }
-        else if (player.getJob().equals("Magician") )
-            for (String skill : ((Magician)player).getSkills()){
-                allcommands.add(skill);
+        });
+        battleButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e ){
+                if (monsterSelected == false){
+                    JOptionPane.showMessageDialog(c,"Please select monster first!","No monster selected",JOptionPane.INFORMATION_MESSAGE);
+                }
+                else {
+                    game.battleRedraw(player,mon,game);
+                    //monsterSelected = false;
+                    game.showMonster(mon);
+                }
             }
-        String command;
-        int mon_hp = mon.getHp(mon);
-        int playerdmg = 0;
-        int totalDamageToPlayer;
-        int damageCal = 0;
-        System.out.println("Encounters the " + mon.getName(mon) +"!.");
-        System.out.println("All available commands.");
-        System.out.println(allcommands);
-        while (mon_hp > 0 ){
-            System.out.println("==========" + mon.getName(mon) + "==========");
-            System.out.println("HP : " + mon_hp + "    " + "Level : " + mon.getLevel(mon) );
-            System.out.println("=========================");
-            command = inputNovice(player);
-            if (command.equals("run")|| command.equals("exit")){
-                System.out.println("Run away from monster.");
-                break;
+        });
+        bagButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                JOptionPane.showMessageDialog(c,inventory.strItemList(),"Items in bag",JOptionPane.INFORMATION_MESSAGE);
             }
-            else if ( command.equals("attack") ){
+        });
+        usePotionButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                int successUsingPotion = inventory.usepotion();
+                if (successUsingPotion == 0){
+                    JOptionPane.showMessageDialog(c,"No more potions.","Potions run out",JOptionPane.INFORMATION_MESSAGE);
+                }
+                else{
+                    player.heal(20);
+                    pHp.setText("HP : "+player.getHp());
+                    playerStatPanel.revalidate();
+                }
+            }
+        });
+        classChangeButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                if(player.getLevel() <2 ){
+                    JOptionPane.showMessageDialog(c,"Job advancement available after level 2.","Cannot change class",JOptionPane.INFORMATION_MESSAGE);
+                }
+                else{
+                    JFrame classChangeGUI = new JFrame("Class Changing");
+                    Container cClassChange = classChangeGUI.getContentPane();
+                    cClassChange.setLayout(new BoxLayout(cClassChange,BoxLayout.Y_AXIS));
+                    JPanel selectionPanel = new JPanel();
+                    selectionPanel.setLayout(new  GridLayout(3,1));
+                    JButton changeToMagicianButton = new JButton("Magician");
+                    JButton changeToSwordmanButton = new JButton("Swordman");
+                    JLabel changeClassTitle = new JLabel("Choose your new class");
+                    selectionPanel.add(changeClassTitle);
+                    selectionPanel.add(changeToSwordmanButton);
+                    selectionPanel.add(changeToMagicianButton);
+                    cClassChange.add(selectionPanel);
+                    classChangeGUI.setSize(200,200);
+                    classChangeGUI.setLocationRelativeTo(null);
+                    classChangeGUI.setVisible(true);
+                    classChangeGUI.setResizable(false);
+                    changeToSwordmanButton.addActionListener(new ActionListener(){
+                        public void actionPerformed(ActionEvent e){
+                            Swordman advancedPlayer = new Swordman(player);
+                            player.setstat(player,"Swordman");
+                            JOptionPane.showMessageDialog(cClassChange,"Changed to Swordman!","Class changed",JOptionPane.INFORMATION_MESSAGE);
+                            pJob.setText("Job : " + player.getJob());
+                            playerStatPanel.revalidate();
+                            classChangeGUI.setVisible(false);
+                        }
+                    });
+                    changeToMagicianButton.addActionListener(new ActionListener(){
+                        public void actionPerformed(ActionEvent e){
+                            Magician advancedPlayer = new Magician(player);
+                            player.setstat(player,"Magician");
+                            JOptionPane.showMessageDialog(cClassChange,"Changed to Magician!","Class changed",JOptionPane.INFORMATION_MESSAGE);
+                            pJob.setText("Job : " + player.getJob());
+                            playerStatPanel.revalidate();
+                            classChangeGUI.setVisible(false);
+                        }
+                    });
+                }
+            }
+        });
+        exitButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                gui.setVisible(false);
+                gui.dispose();
+                
+            }
+        });
+        //monster panel
+        monsterStatPanel.add(idleMons);
+        monsterStatPanel.add(selectMonsterButton);
+        monsterStatPanel.add(usePotionButton);
+        //player panel
+        playerStatPanel.add(pTitle);
+        playerStatPanel.add(pJob);
+        playerStatPanel.add(pLevel);
+        playerStatPanel.add(pHp);
+        playerStatPanel.add(pExp);
+        playerStatPanel.add(pExpToNextLevel);
+        playerStatPanel.add(pMonsterSlained);
+        //stat display panel
+        statDisplay.add(playerStatPanel,BorderLayout.WEST);
+        statDisplay.add(monsterStatPanel,BorderLayout.CENTER);
+        //action panel
+        actionPanel.add(battleButton);
+        actionPanel.add(bagButton);
+        actionPanel.add(classChangeButton);
+        actionPanel.add(exitButton);
+        //container
+        c.add(statDisplay,BorderLayout.WEST);
+        c.add(actionPanel,BorderLayout.SOUTH);
+        gui.pack();
+        gui.setLocationRelativeTo(null);
+        gui.setVisible(true);
+        gui.setResizable(false);
+    }
+    public Novice getNovice(){
+        return this.player;
+    }
+    public void battleRedraw(Novice player,Monster mon,HelloWorld g){
+        battleGUI = new JFrame("Battle");
+        cBattle = battleGUI.getContentPane();
+        cBattle.setLayout(new BorderLayout(10,7));
+        //panel
+        JPanel skillPanel = new JPanel();
+        skillPanel.setLayout(new GridLayout(2,2));
+        //button
+        JButton normalAtkButton = new JButton("Normal Attack");
+        JButton skill1Button = new JButton();
+        JButton skill2Button = new JButton();
+        JButton runButton = new JButton("Run");
+        //add
+        damageCal = false;
+        skillPanel.add(normalAtkButton);
+        if (player.getJob().equals("Swordman")){
+            skill1Button.setText("Tackle");
+            skill2Button.setText("Heavy Slash");
+            skillPanel.add(skill1Button);
+            skillPanel.add(skill2Button);
+        }
+        else if (player.getJob().equals("Magician")){
+            skill1Button.setText("Fire Ball");
+            skill2Button.setText("Fire Blast");
+            skillPanel.add(skill1Button);
+            skillPanel.add(skill2Button);
+        }
+        //action listener
+        normalAtkButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
                 playerdmg = player.normalAttack();
-                damageCal = 1;
+                battling(player,mon,g);
             }
-            else if ( command.equals("heavyslash")){
-                playerdmg = player.normalAttack() + ((Swordman)player).heavySlash();
-                damageCal = 1;
-            }
-            else if ( command.equals("tackle")){
-                playerdmg = player.normalAttack() + ((Swordman)player).tackle();
-                damageCal = 1;
-            }
-            else if ( command.equals("fireball")){
-                playerdmg = player.normalAttack() + ((Magician)player).fireBall();
-                damageCal = 1;
-            }
-            else if ( command.equals("fireblast")){
-                playerdmg = player.normalAttack() + ((Magician)player).fireBlast();
-                damageCal = 1;
-            }
-            //damage calculation
-            else 
-                System.out.println("Command " + command + " Not Found.");
-            if ( damageCal == 1){ //true for calculation damage or false for wrong commands
-                mon_hp -= playerdmg;
-                System.out.println(mon.getName(mon) + " took " + playerdmg + " damage.");
-                totalDamageToPlayer = mon.getAtk(mon) - player.getDef();
-                if (totalDamageToPlayer < 0)
-                    totalDamageToPlayer = 0;
-                player = player.takeDamage(player,totalDamageToPlayer);
-                if (mon_hp <= 0){
-                    System.out.println(mon.getName(mon) + " died.");
-                    player.gainEXP(player,mon.getExp(mon));
+        });
+        skill1Button.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                if (player.getJob().equals("Swordman")){
+                    playerdmg = player.normalAttack()+player.tackle();
                 }
-            }
-        }
-    return player;
-    }
-    public Novice classChange(Novice prejob){
-        if (prejob.getLevel() <= 1){
-            System.out.println("Job advancement available after level 2.");
-            System.out.println("Current " + prejob.getJob() + " level : " + prejob.getLevel());
-            return prejob;
-        }
-        else{
-            ArrayList<String> alljobs = new ArrayList<String>();
-            alljobs.add("Swordman");
-            alljobs.add("Magician");
-            System.out.println("Select advancement job.");
-            System.out.println(alljobs);
-            InputReader sc = new InputReader();
-            String job = sc.getinput().trim();
-            if ( job.equals("swordman")){
-                Swordman advancedPlayer = new Swordman(prejob);
-                return advancedPlayer;
+                else if (player.getJob().equals("Magician")){
+                    playerdmg = player.normalAttack()+player.fireBall();
                 }
-            else if ( job.equals("magician")){
-                Magician advancedPlayer = new Magician(prejob);
-                return advancedPlayer;
-                } 
-            else 
-                System.out.println("Wrong job name.");
-            return prejob;
+                battling(player,mon,g);
+            }
+        });
+        skill2Button.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                if (player.getJob().equals("Swordman")){
+                    playerdmg = player.normalAttack()+player.heavySlash();
+                }
+                else if (player.getJob().equals("Magician")){
+                    playerdmg = player.normalAttack()+player.fireBlast();
+                }
+                battling(player,mon,g);
+            }
+        });
+        runButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                battleGUI.setVisible(false);
+                battleEnded = true;
+                monsterSelected = false;
+                System.out.println(battleEnded);
+                //redraw monster panel
+                monsterStatPanel.removeAll();
+                monsterStatPanel.add(idleMons);
+                monsterStatPanel.add(selectMonsterButton);
+                monsterStatPanel.add(usePotionButton);
+                statDisplay.add(playerStatPanel,BorderLayout.WEST);
+                statDisplay.add(monsterStatPanel,BorderLayout.CENTER);
+                statDisplay.revalidate();
+            }
+        });
+        skillPanel.add(runButton);
+        cBattle.add(playerStatPanel,BorderLayout.WEST);
+        cBattle.add(monsterStatPanel,BorderLayout.EAST);
+        cBattle.add(skillPanel,BorderLayout.SOUTH);
+        battleGUI.setSize(500,500);
+        battleGUI.pack();
+        battleGUI.setResizable(false);
+        battleGUI.setLocationRelativeTo(null);
+        battleGUI.setVisible(true);
+    }
+    public void battling(Novice player,Monster mon,HelloWorld g){
+        int monsterdmg = mon.getAtk();
+        //set new player stat
+        player = player.takeDamage(player,monsterdmg);
+        pHp.setText("HP : " + player.getHp());
+        //set new monster stat
+        mon.takeDamage(playerdmg);
+        mHp.setText("HP : " + mon.getHp());
+        monsterStatPanel.revalidate();
+        //add to panel
+        playerStatPanel.revalidate();
+        //won battle
+        if (mon.getHp() <= 0){
+            JOptionPane.showMessageDialog(cBattle,mon.getName()+ " died.","Won!",JOptionPane.INFORMATION_MESSAGE);
+            player = player.gainEXP(player,mon.getExp());
+            pExp.setText("exp : " + player.getExp());
+            pLevel.setText("Level : " + player.getLevel());
+            pHp.setText("HP : " + player.getHp());
+            pExpToNextLevel.setText("Need more " + player.getExpToLevelUp() + " exps");
+            monsterSlained++;
+            pMonsterSlained.setText("Monster Slained : "+monsterSlained);
+            battleGUI.setVisible(false);
+            inventory.getpotion();
+            battleEnded = true;
+            monsterSelected = false;
+            System.out.println(battleEnded);
+            //redraw monster panel
+            monsterStatPanel.removeAll();
+            monsterStatPanel.add(idleMons);
+            monsterStatPanel.add(selectMonsterButton);
+            monsterStatPanel.add(usePotionButton);
+            statDisplay.add(playerStatPanel,BorderLayout.WEST);
+            statDisplay.add(monsterStatPanel,BorderLayout.CENTER);
+            statDisplay.revalidate();
         }
     }
-    public String inputNovice(Novice player){
-        InputReader sc = new InputReader();
-        String a;
-        System.out.println("What should "+ player.getJob() +" do?");
-        System.out.print(">>> ");
-        a = sc.getinput().trim();
-        return a;
+    public void showMonster(Monster m){
+        monsterStatPanel.removeAll();
+        monsterStatPanel.setVisible(false);
+        mTitle.setText("|=======Monster========|");
+        mName.setText("Name : " + m.getName());
+        mLevel.setText("Level : " + m.getLevel());
+        mHp.setText("HP : " + m.getHp());
+        monsterStatPanel.add(mTitle);
+        monsterStatPanel.add(mName);
+        monsterStatPanel.add(mLevel);
+        monsterStatPanel.add(mHp);
+        monsterStatPanel.setVisible(true);
     }
 }

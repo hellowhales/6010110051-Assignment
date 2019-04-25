@@ -13,6 +13,15 @@ public class Bag{
             System.out.println(i.getItemName());
         }
     }
+    public String strItemList(){
+        String tmp = "";
+        int id = 1;
+        for (Item i : items){
+            tmp = tmp + Integer.toString(id) +  ". " + i.getItemName() + "\n";
+            id++;
+        }
+        return tmp;
+    }
     public void getpotion(){
         items.add(new Item(0));
         System.out.println("Got one potion!");
